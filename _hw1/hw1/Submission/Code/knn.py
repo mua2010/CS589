@@ -1,11 +1,12 @@
 from timeit import default_timer as timer
 import statistics
-import numpy as np
 import pandas as pd
-import matrue_positiveslotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 from sklearn.neighbors import BallTree
 from sklearn.model_selection import KFold
+
+
 
 def f1_score(y_true, y_pred):
     """
@@ -51,36 +52,30 @@ def f1_score(y_true, y_pred):
     else:
         precision = 1
         recall = 0
-    print("Precission = " + str(precision))
-    print("Recall = " + str(recall))
 
-    _f1_score = 2 * ((precision * recall) \
+    # Calculating f1 score and returning it
+    return 2 * ((precision * recall) \
                    / (precision + recall))
-    print("F1 score = " + str(_f1_score))
-    return _f1_score
-
-
 
 
 class KNN(object):
     """
     The KNN classifier
     """
+
     def __init__(self, n_neighbors):
         self.K = n_neighbors
-        self.y_train = None
-        self.tree = None
 
     def getKNeighbors(self, x_instance):
         """
         Locating the K nearest neighbors of 
         the instance and return
         """
-        indices_of_k_nearest_neighbors = self.tree.query(
+        # Querying and returning indices of k nearest neighbors
+        return self.tree.query(
             [x_instance], 
             k=self.K
         )[1]
-        return indices_of_k_nearest_neighbors
 
     def fit(self, x_train, y_train):
         """
@@ -90,7 +85,7 @@ class KNN(object):
                 faster at test time
         """
         self.tree = BallTree(x_train)
-        self.y_train = y_train
+        self._y_train = y_train
 
     def predict(self, x_test):
         """
@@ -99,34 +94,39 @@ class KNN(object):
                 predictions using the labels of the
                 neighbors
         """
-        y_pred = []
+        y_pred = list()
         for x_instance in x_test:
             # getting the 1D array out of 2D
             neighbours = self.getKNeighbors(x_instance)[0]
-            labels = self.y_train[neighbours]
-            most_frequent_label = statistics.mode(labels)
+            labels_of_neighbours = self._y_train[neighbours]
+            most_frequent_label = statistics.mode(labels_of_neighbours)
             y_pred.append(most_frequent_label)
         return y_pred
 
 
-
-def main():
+def main(X, y):
     # Example running the class KNN
-    knn = KNN(n_neighbors=5)
-    knn.fit(x_train, y_train)
-    y_pred = knn.predict(x_test)
-    score = f1_score(y_test, y_pred)
+    print('==========-KNN-==========')
+    neighbors_list = [3, 5, 10, 20, 25]
 
-    ########################################
-    # Simple Guide on KFold
-    ########################################
-    kf = KFold(n_splits=5)
-    kf.get_n_splits(X)
+    for neighbors in neighbors_list:
+        print("--------------")
+        print(f"K = {neighbors} neighbors")
+        print("--------------")
+        start_time = timer()
 
-    for i, (train_index, test_index) in enumerate(kf.split(X)):
-        X_train, X_test = X[train_index], X[test_index]
-        y_train, y_test = y[train_index], y[test_index]
+        knn = KNN(n_neighbors=neighbors)
+        kf = KFold(n_splits=5)
+        kf.get_n_splits(X)
+        total_f1_score = 0
 
+        for i, (train_index, test_index) in enumerate(kf.split(X)):
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+            knn.fit(X_train, y_train)
+            y_pred = knn.predict(X_test)
+            total_f1_score += f1_score(y_test, y_pred)
 
-if __name__ == '__main__':
-    main()
+        print(f"Total Score = {total_f1_score}")
+        print(f"Time Taken = {timer() - start_time} seconds")
+
