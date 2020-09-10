@@ -1,8 +1,6 @@
 from timeit import default_timer as timer
-import statistics
-import pandas as pd
-import matplotlib.pyplot as plt
-
+from statistics import mode
+# import matplotlib.pyplot as plt
 from sklearn.neighbors import BallTree
 from sklearn.model_selection import KFold
 
@@ -55,7 +53,7 @@ def f1_score(y_true, y_pred):
 
     # Calculating f1 score and returning it
     return 2 * ((precision * recall) \
-                   / (precision + recall))
+              / (precision + recall))
 
 
 class KNN(object):
@@ -99,7 +97,7 @@ class KNN(object):
             # getting the 1D array out of 2D
             neighbours = self.getKNeighbors(x_instance)[0]
             labels_of_neighbours = self._y_train[neighbours]
-            most_frequent_label = statistics.mode(labels_of_neighbours)
+            most_frequent_label = mode(labels_of_neighbours)
             y_pred.append(most_frequent_label)
         return y_pred
 
@@ -110,9 +108,9 @@ def main(X, y):
     neighbors_list = [3, 5, 10, 20, 25]
 
     for neighbors in neighbors_list:
-        print("--------------")
+        print("------------------")
         print(f"K = {neighbors} neighbors")
-        print("--------------")
+        print("------------------")
         start_time = timer()
 
         knn = KNN(n_neighbors=neighbors)
@@ -127,6 +125,6 @@ def main(X, y):
             y_pred = knn.predict(X_test)
             total_f1_score += f1_score(y_test, y_pred)
 
-        print(f"Total Score = {total_f1_score}")
+        print(f"Total Score = {total_f1_score/5}")
         print(f"Time Taken = {timer() - start_time} seconds")
 
