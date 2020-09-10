@@ -23,7 +23,53 @@ def f1_score(y_true, y_pred):
     score   : the F1 score, shaped (N,)
 
     """
-    pass
+    """
+    Function for calculating the F1 score
+
+    Params
+    ------
+    y_true  : the true labels shaped (N, C), 
+              N is the number of datapoints
+              C is the number of classes
+    y_pred  : the predicted labels, same shape
+              as y_true
+
+    Return
+    ------
+    score   : the F1 score, shaped (N,)
+
+    """
+    FRAUD  = 1
+    NORMAL = 0
+
+    true_positives = 0
+    false_positives = 0
+    true_negatives = 0
+    false_negatives = 0
+
+    for current_y_true, current_y_pred in zip(y_true, y_pred):
+        if current_y_true == NORMAL:
+            if current_y_pred == FRAUD:
+                false_positives += 1
+            elif current_y_pred == NORMAL:
+                true_negatives += 1
+        elif current_y_true == FRAUD:
+            if current_y_pred == FRAUD:
+                true_positives += 1
+            elif current_y_pred == NORMAL:
+                false_negatives += 1
+
+    if true_positives != 0:
+        # Calculating precision and recall
+        precision = true_positives / (true_positives + false_positives)
+        recall = true_positives / (true_positives + false_negatives)
+    else:
+        precision = 1
+        recall = 0
+
+    # Calculating f1 score and returning it
+    return 2 * ((precision * recall) \
+              / (precision + recall))
 
 def gini_index(groups, classes):
     """
@@ -41,8 +87,25 @@ def gini_index(groups, classes):
     ------
     gini    : the gini index of the split
     """
-    pass
+    gini_index = 0.0
 
+    number_of_samples = 0
+    for group in groups:
+        number_of_samples += len(group)
+    
+    # Calculating sum of the gini index for each group
+    for group in groups:
+        if len(group) != 0:
+            score = 0 # will store the score for class
+            for _class in classes:
+                each_sub_group_list = list()
+                for each in group:
+                    each_sub_group_list.append(each[-1])
+                value = each_sub_group_list.count(_class) / len(group)
+                score += value ** 2
+            gini_index += (len(group) / number_of_samples) \
+                          * (1.0 - score)
+    return gini_index
 
 def get_split(x_train, y_train):
     """
