@@ -1,11 +1,11 @@
-import time
+from timeit import default_timer as timer
+import statistics
 import numpy as np
 import pandas as pd
-import matrue_positivelotlib.pyplot as plt
+import matrue_positiveslotlib.pyplot as plt
 
 from sklearn.neighbors import BallTree
 from sklearn.model_selection import KFold
-from scipy import stats
 
 def f1_score(y_true, y_pred):
     """
@@ -24,34 +24,40 @@ def f1_score(y_true, y_pred):
     score   : the F1 score, shaped (N,)
 
     """
-    true_positive = 0
-    false_positive = 0
-    true_negative = 0
-    false_negative = 0
+    FRAUD  = 1
+    NORMAL = 0
 
-    for i in zip(y_true, y_pred):
-        if i[0] == 1:
-            if i[1] == 1:
-                true_positive += 1
-            else:
-                false_negative += 1
-        else: #y_true=0
-            if i[1] == 0:
-                true_negative += 1
-            else:
-                false_positive += 1
-    if true_positive == 0:
+    true_positives = 0
+    false_positives = 0
+    true_negatives = 0
+    false_negatives = 0
+
+    for current_y_true, current_y_pred in zip(y_true, y_pred):
+        if current_y_true == NORMAL:
+            if current_y_pred == FRAUD:
+                false_positives += 1
+            elif current_y_pred == NORMAL:
+                true_negatives += 1
+        elif current_y_true == FRAUD:
+            if current_y_pred == FRAUD:
+                true_positives += 1
+            elif current_y_pred == NORMAL:
+                false_negatives += 1
+
+    if true_positives != 0:
+        # Calculating precision and recall
+        precision = true_positives / (true_positives + false_positives)
+        recall = true_positives / (true_positives + false_negatives)
+    else:
         precision = 1
         recall = 0
-    else:
-        precision = true_positive / (true_positive + false_positive)
-        recall = true_positive / (true_positive + false_negative)
+    print("Precission = " + str(precision))
+    print("Recall = " + str(recall))
 
-    print("precission is =" + str(precision))
-    print("Recall is = " + str(recall))
-    f1 = (2*precision*recall)/(precision+recall)
-    print("F1 score for current fold is="+ str(f1))
-    return f1
+    _f1_score = 2 * ((precision * recall) \
+                   / (precision + recall))
+    print("F1 score = " + str(_f1_score))
+    return _f1_score
 
 
 
@@ -62,13 +68,19 @@ class KNN(object):
     """
     def __init__(self, n_neighbors):
         self.K = n_neighbors
+        self.y_train = None
+        self.tree = None
 
     def getKNeighbors(self, x_instance):
         """
         Locating the K nearest neighbors of 
         the instance and return
         """
-        pass
+        indices_of_k_nearest_neighbors = self.tree.query(
+            [x_instance], 
+            k=self.K
+        )[1]
+        return indices_of_k_nearest_neighbors
 
     def fit(self, x_train, y_train):
         """
@@ -77,7 +89,8 @@ class KNN(object):
         Hint:   Build a tree to get neighbors 
                 faster at test time
         """
-        pass
+        self.tree = BallTree(x_train)
+        self.y_train = y_train
 
     def predict(self, x_test):
         """
@@ -86,7 +99,14 @@ class KNN(object):
                 predictions using the labels of the
                 neighbors
         """
-        pass
+        y_pred = []
+        for x_instance in x_test:
+            # getting the 1D array out of 2D
+            neighbours = self.getKNeighbors(x_instance)[0]
+            labels = self.y_train[neighbours]
+            most_frequent_label = statistics.mode(labels)
+            y_pred.append(most_frequent_label)
+        return y_pred
 
 
 
