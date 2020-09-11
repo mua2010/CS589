@@ -1,4 +1,4 @@
-import time
+from timeit import default_timer as timer
 import sys
 import numpy as np
 import pandas as pd
@@ -139,7 +139,8 @@ def get_split(x_train, y_train):
                 result['split_value'] = row[current_index]
                 # best_index = current_index
                 # best_value = row[best_index]
-                best_group = groups # Dictionary
+                # best_group = groups # Dictionary
+        current_index += 1
 
     return result
 
@@ -200,14 +201,35 @@ class DecisionTree(object):
         """
         pass
 
-def main():
+def main(X, y):
     # Example running the class DecisionTree
-    dt = DecisionTree(max_depth=5)
-    dt.fit(x_train, y_train)
-    y_pred = dt.predict(x_test)
-    score = f1_score(y_test, y_pred)
+    depths = [3, 6, 9, 12, 15]
+    for depth in depths:
 
+        
+        dt.fit(x_train, y_train)
+        y_pred = dt.predict(x_test)
+        score = f1_score(y_test, y_pred)
 
+        print("------------------")
+        print(f"Depth = {depth}")
+        print("------------------")
+        start_time = timer()
+
+        dt = DecisionTree(max_depth=depth)
+        kf = KFold(n_splits=5)
+        kf.get_n_splits(X)
+        total_f1_score = 0
+
+        for i, (train_index, test_index) in enumerate(kf.split(X)):
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+            dt.fit(X_train, y_train)
+            y_pred = dt.predict(X_test)
+            total_f1_score += f1_score(y_test, y_pred)
+
+        print(f"Total Score = {total_f1_score/5}")
+        print(f"Time Taken = {(timer() - start_time) * 1000} ms")
 
 
 
