@@ -43,20 +43,21 @@ def f1_score(y_true, y_pred):
             elif current_y_pred == NORMAL:
                 false_negatives += 1
 
-    if true_positives != 0:
-        # Calculating precision and recall
-        precision = true_positives / (true_positives + false_positives)
-        recall = true_positives / (true_positives + false_negatives)
-    else:
-        precision = 1
-        recall = 0
+    precision = true_positives / (true_positives + false_positives)
+    recall = true_positives / (true_positives + false_negatives)
 
     # Calculating f1 score and returning it
     return 2 * ((precision * recall) \
               / (precision + recall))
 
 
-def gini_index(groups, classes, y_train):
+def get_y_train_of_group(group):
+    y_train_list = list()
+    for each in group:
+        y_train_list.append(each[len(each)-1])
+    return y_train_list
+
+def gini_index(groups, classes):
     """
     Function for calculating the gini index
         -- The goodness of the split
@@ -72,30 +73,30 @@ def gini_index(groups, classes, y_train):
     ------
     gini    : the gini index of the split
     """
-    _gini_index = 0.0
+    _gini = 0.0
 
     left_split = groups.get('left')
     right_split = groups.get('right')
     number_of_samples = len(left_split) + len(right_split)
-    
+
     def gini_index_helper(group):
-        # Calculating sum of the gini index for each group
-        nonlocal _gini_index
+        # Calculating sum of the gini index for all groups
+        nonlocal _gini
         length_of_current_group = len(group)
         if length_of_current_group != 0:
             score = 0 # will store the score for class
             for _class in classes:
-                value = y_train.count(_class) / length_of_current_group
+                value = get_y_train_of_group(group).count(_class) / length_of_current_group
                 score += value ** 2
-            _gini_index += (length_of_current_group / number_of_samples) \
-                           * (1.0 - score)
+            _gini += (length_of_current_group / number_of_samples) \
+                     * (1.0 - score)
 
     gini_index_helper(left_split)
     gini_index_helper(right_split)
-    return _gini_index
+    return _gini
 
 
-def get_split(x_train, y_train):
+def get_split(formatted_data):
     """
     Function to generate the split which results in
         the best gini_index
@@ -110,35 +111,35 @@ def get_split(x_train, y_train):
     {gini_index, split_index, split_value}
     """
     result = {
-        'gini_index': None,
+        'gini': None,
         'split_index': None,
         'split_value': None,
-        'best_group': None
+        'best_groups': None
     }
 
     classes = [0, 1]
     best_gini = sys.maxsize
     current_index = 0
-    length_of_a_row = len(x_train[0])
+    length_of_a_row = 29 # len(formatted_data[0]) - 1
     while current_index < length_of_a_row:
-        for i, row in enumerate(x_train):
+        for i, row in enumerate(formatted_data):
             current_value = row[current_index]
             groups = {
                 'left': [],
                 'right': []
             }
-            for row in x_train:
-                if row[current_index] >= current_value:
-                    groups['right'].append(row)
+            for each in formatted_data:
+                if each[current_index] >= current_value:
+                    groups['right'].append(each)
                 else:
-                    groups['left'].append(row)
-            current_gini = gini_index(groups, classes, y_train)
+                    groups['left'].append(each)
+            current_gini = gini_index(groups, classes)
             if current_gini < best_gini:
                 best_gini = current_gini
-                result['gini_index'] = best_gini
+                result['gini'] = best_gini
                 result['split_index'] = current_index
                 result['split_value'] = current_value
-                result['best_group'] = groups
+                result['best_groups'] = groups
         current_index += 1
 
     return result
@@ -154,7 +155,7 @@ class DecisionTree(object):
     """
     The Decision Tree classifier
     """
-    def __init__(self, max_depth, min_size=None):
+    def __init__(self, max_depth, min_size):
         """
         Params
         ------
@@ -163,10 +164,7 @@ class DecisionTree(object):
                         leaf/terminal node
         """
         self.max_depth = max_depth
-        self.min_size = 5
-        
-    def set_most_repeated(self, y_train):
-        self.most_repeated_in_y_train = max(set(y_train), key=y_train.count)
+        self.min_size = min_size
 
     def split(self, data, depth):
         """
@@ -182,8 +180,12 @@ class DecisionTree(object):
         Return
         ------
         """
-        left_node = data.get('groups').get('left')
-        right_node = data.get('groups').get('right')
+        def split_helper():
+
+        groups = data.pop('groups')
+        left_node = groups.get('left')
+        right_node = groups.get('right')
+
         if (not (left_node or right_node)) or (depth >= self.max_depth):
             data['groups']['left'] = self.most_repeated_in_y_train
             data['groups']['right'] = self.most_repeated_in_y_train
@@ -191,6 +193,10 @@ class DecisionTree(object):
         if len(left_node) > self.min_size:
             data['groups']['left'] = get_split()
 
+    def set_most_repeated(self, group):
+        y_train_values = get_y_train_of_group(group)
+        self.most_repeated_in_y_train_group = max(set(y_train_values), key=y_train_values.count)
+        
     def fit(self, x_train, y_train):
         """
         Fitting the KNN classifier
@@ -200,10 +206,9 @@ class DecisionTree(object):
                 node is reached
 
         """
-        self.y_train = y_train.tolist()
-        self.set_most_repeated(self.y_train)
-        self.root = get_split(x_train, self.y_train)
-        self.groups = self.root.get('groups')
+        self.formatted_data = get_formatted_data(x_train, y_train)
+        self.root = get_split(self.formatted_data)
+        self.groups = self.root.get('best_groups')
         self.split(self.root, self.max_depth)
 
     def predict(self, x_test):
@@ -215,18 +220,25 @@ class DecisionTree(object):
         """
         pass
 
+def get_formatted_data(X, y):
+    return np.insert(X, len(X[0]), y, axis=1)
+    # data_hashmap = dict()
+    # for index, (each_in_X, each_in_y) in enumerate(zip(X, y)):
+    #     data_hashmap[index] = (each_in_X, each_in_y)
+    # return data_hashmap
 
 def main(X, y):
     # Example running the class DecisionTree
     print('==========-Decision Tree-==========')
     depths = [3, 6, 9, 12, 15]
+    min_size = 10
     for depth in depths:
         print("------------------")
         print(f"Depth = {depth}")
         print("------------------")
         start_time = timer()
 
-        dt = DecisionTree(max_depth=depth)
+        dt = DecisionTree(max_depth=depth, min_size=min_size)
         kf = KFold(n_splits=5)
         kf.get_n_splits(X)
         total_f1_score = 0

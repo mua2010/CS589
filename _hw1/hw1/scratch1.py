@@ -82,7 +82,7 @@ def test_split(index, value, dataset):
 def gini_index(groups, classes):
     # count all samples at split point
     n_instances = float(sum([len(group) for group in groups]))
-    breakpoint()
+    # breakpoint()
     # sum weighted Gini index for each group
     gini = 0.0
     for group in groups:
@@ -124,6 +124,7 @@ def to_terminal(group):
 
 
 def split(node, max_depth, min_size, depth):
+    breakpoint()
     left, right = node['groups']
     del(node['groups'])
     # check for a no split
@@ -152,6 +153,7 @@ def split(node, max_depth, min_size, depth):
 
 def build_tree(train, max_depth, min_size):
     root = get_split(train)
+    breakpoint()
     split(root, max_depth, min_size, 1)
     return root
 

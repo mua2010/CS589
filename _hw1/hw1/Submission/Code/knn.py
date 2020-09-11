@@ -43,13 +43,8 @@ def f1_score(y_true, y_pred):
             elif current_y_pred == NORMAL:
                 false_negatives += 1
 
-    if true_positives != 0:
-        # Calculating precision and recall
-        precision = true_positives / (true_positives + false_positives)
-        recall = true_positives / (true_positives + false_negatives)
-    else:
-        precision = 1
-        recall = 0
+    precision = true_positives / (true_positives + false_positives)
+    recall = true_positives / (true_positives + false_negatives)
 
     # Calculating f1 score and returning it
     return 2 * ((precision * recall) \
@@ -103,7 +98,6 @@ class KNN(object):
 
 
 def main(X, y):
-    breakpoint()
     # Example running the class KNN
     print('==========-KNN-==========')
     neighbors_list = [3, 5, 10, 20, 25]
@@ -118,10 +112,10 @@ def main(X, y):
         kf = KFold(n_splits=5)
         kf.get_n_splits(X)
         total_f1_score = 0
-
         for i, (train_index, test_index) in enumerate(kf.split(X)):
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
+            # breakpoint()
             knn.fit(X_train, y_train)
             y_pred = knn.predict(X_test)
             total_f1_score += f1_score(y_test, y_pred)
