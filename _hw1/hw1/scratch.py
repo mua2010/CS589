@@ -60,38 +60,3 @@ dataset = [[2.771244718, 1.784783929, 0],
 split = get_split(dataset)
 print('Split: [X%d < %.3f]' % ((split['index']+1), split['value']))
 
-
-
-
-def main():
-    X_t = np.genfromtxt('../../Data/x_train.csv', delimiter=',')  # shape = (200000, 29)
-    y_t = np.genfromtxt('../../Data/y_train.csv', delimiter=',')  # shape = (200000,)
-    def k_fold_validation(max_depth=5, train_x=None, train_y=None):
-        print("#######################################################")
-        print("Decision Tree FOR Max_Depth="+str(max_depth))
-        print("#######################################################")
-        X = train_x
-        y = train_y
-        dt = DecisionTree(max_depth=5)
-        kf = KFold(n_splits=5)
-        kf.get_n_splits(train_x)
-        score = 0
-
-        for i, (train_index, test_index) in enumerate(kf.split(X)):
-            startt = time.time()
-            print("FOLD=" + str(i + 1))
-            X_train, X_test = X[train_index], X[test_index]
-            y_train, y_test = y[train_index], y[test_index]
-            dt.fit(X_train, y_train)
-            y_pred = dt.predict(X_test)
-            score += f1_score(y_test, y_pred)
-            ent = time.time()
-            print("TIME for this fold is: "+ str(ent-startt) +" Seconds")
-
-        print("Final F1 for all the folds is " + str(score / 5))
-    Max_Depth_List = [3, 6, 9, 12, 15]
-    for max_depth in Max_Depth_List:
-        start = time.time()
-        k_fold_validation(max_depth, X_t, y_t)
-        end = time.time()
-        print("Total Time for all 5 folds with d= "+str(max_depth)+" is "+str(end-start)+" seconds")

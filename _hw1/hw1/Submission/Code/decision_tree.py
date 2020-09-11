@@ -56,7 +56,7 @@ def f1_score(y_true, y_pred):
               / (precision + recall))
 
 
-def gini_index(groups, classes, sub_y_train):
+def gini_index(groups, classes, y_train):
     """
     Function for calculating the gini index
         -- The goodness of the split
@@ -74,8 +74,8 @@ def gini_index(groups, classes, sub_y_train):
     """
     _gini_index = 0.0
 
-    left_split = groups['left']
-    right_split = groups['right']
+    left_split = groups.get('left')
+    right_split = groups.get('right')
     number_of_samples = len(left_split) + len(right_split)
     
     def gini_index_helper(group):
@@ -85,7 +85,7 @@ def gini_index(groups, classes, sub_y_train):
         if length_of_current_group != 0:
             score = 0 # will store the score for class
             for _class in classes:
-                value = sub_y_train.count(_class) / length_of_current_group
+                value = y_train.count(_class) / length_of_current_group
                 score += value ** 2
             _gini_index += (length_of_current_group / number_of_samples) \
                            * (1.0 - score)
@@ -113,6 +113,7 @@ def get_split(x_train, y_train):
         'gini_index': None,
         'split_index': None,
         'split_value': None,
+        'best_group': None
     }
 
     classes = [0, 1]
@@ -131,15 +132,13 @@ def get_split(x_train, y_train):
                     groups['right'].append(row)
                 else:
                     groups['left'].append(row)
-            current_gini = gini_index(groups, classes, y_train[i])
+            current_gini = gini_index(groups, classes, y_train)
             if current_gini < best_gini:
                 best_gini = current_gini
                 result['gini_index'] = best_gini
                 result['split_index'] = current_index
-                result['split_value'] = row[current_index]
-                # best_index = current_index
-                # best_value = row[best_index]
-                # best_group = groups # Dictionary
+                result['split_value'] = current_value
+                result['best_group'] = groups
         current_index += 1
 
     return result
@@ -155,7 +154,7 @@ class DecisionTree(object):
     """
     The Decision Tree classifier
     """
-    def __init__(self, max_depth, min_size):
+    def __init__(self, max_depth, min_size=None):
         """
         Params
         ------
@@ -165,6 +164,9 @@ class DecisionTree(object):
         """
         self.max_depth = max_depth
         self.min_size = 5
+        
+    def set_most_repeated(self, y_train):
+        self.most_repeated_in_y_train = max(set(y_train), key=y_train.count)
 
     def split(self, data, depth):
         """
@@ -180,6 +182,14 @@ class DecisionTree(object):
         Return
         ------
         """
+        left_node = data.get('groups').get('left')
+        right_node = data.get('groups').get('right')
+        if (not (left_node or right_node)) or (depth >= self.max_depth):
+            data['groups']['left'] = self.most_repeated_in_y_train
+            data['groups']['right'] = self.most_repeated_in_y_train
+            return
+        if len(left_node) > self.min_size:
+            data['groups']['left'] = get_split()
 
     def fit(self, x_train, y_train):
         """
@@ -190,7 +200,11 @@ class DecisionTree(object):
                 node is reached
 
         """
-        pass
+        self.y_train = y_train.tolist()
+        self.set_most_repeated(self.y_train)
+        self.root = get_split(x_train, self.y_train)
+        self.groups = self.root.get('groups')
+        self.split(self.root, self.max_depth)
 
     def predict(self, x_test):
         """
@@ -201,16 +215,12 @@ class DecisionTree(object):
         """
         pass
 
+
 def main(X, y):
     # Example running the class DecisionTree
+    print('==========-Decision Tree-==========')
     depths = [3, 6, 9, 12, 15]
     for depth in depths:
-
-        
-        dt.fit(x_train, y_train)
-        y_pred = dt.predict(x_test)
-        score = f1_score(y_test, y_pred)
-
         print("------------------")
         print(f"Depth = {depth}")
         print("------------------")
