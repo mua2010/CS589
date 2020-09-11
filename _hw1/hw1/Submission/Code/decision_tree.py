@@ -166,7 +166,7 @@ class DecisionTree(object):
         self.max_depth = max_depth
         self.min_size = min_size
 
-    def split(self, data, depth):
+    def split(self, data):
         """
         Function called recursively to split
             the data in order to build a decision
@@ -180,18 +180,42 @@ class DecisionTree(object):
         Return
         ------
         """
-        def split_helper():
+        def split_helper(current_node, current_depth):
+            groups = current_node.pop('groups')
+            left_node = groups.get('left')
+            right_node = groups.get('right')
+            if not (left_node or right_node):
+                self.set_most_repeated(left_node + right_node)
+                current_node['left'] = self.most_repeated_in_y_train_group
+                current_node['right'] = self.most_repeated_in_y_train_group
+                return
+            if current_depth < self.max_depth:
+                if len(left_node) > self.min_size:
+                    current_node['left'] = get_split(left_node)
+                    current_left_node = current_node['left']
+                    current_depth += 1
+                    split_helper(current_left_node, current_depth)
+                else:
+                    self.set_most_repeated(left_node)
+                    current_node['left'] = self.most_repeated_in_y_train_group
 
-        groups = data.pop('groups')
-        left_node = groups.get('left')
-        right_node = groups.get('right')
+                if len(right_node) > self.min_size:
+                    current_node['right'] = get_split(right_node)
+                    current_right_node = current_node['right']
+                    current_depth += 1
+                    split_helper(current_right_node, current_depth)
+                else:
+                    self.set_most_repeated(right_node)
+                    current_node['right'] = self.most_repeated_in_y_train_group
+            else:
+                self.set_most_repeated(left_node)
+                current_node['left'] = self.most_repeated_in_y_train_group
+                self.set_most_repeated(right_node)
+                current_node['right'] = self.most_repeated_in_y_train_group
 
-        if (not (left_node or right_node)) or (depth >= self.max_depth):
-            data['groups']['left'] = self.most_repeated_in_y_train
-            data['groups']['right'] = self.most_repeated_in_y_train
-            return
-        if len(left_node) > self.min_size:
-            data['groups']['left'] = get_split()
+        # groups = data.pop('groups')
+        split_helper(data, 1)
+
 
     def set_most_repeated(self, group):
         y_train_values = get_y_train_of_group(group)
@@ -207,9 +231,10 @@ class DecisionTree(object):
 
         """
         self.formatted_data = get_formatted_data(x_train, y_train)
-        self.root = get_split(self.formatted_data)
-        self.groups = self.root.get('best_groups')
-        self.split(self.root, self.max_depth)
+        breakpoint()
+        self.tree = get_split(self.formatted_data)
+        self.groups = self.tree.get('best_groups')
+        self.split(self.tree)
 
     def predict(self, x_test):
         """
@@ -218,7 +243,19 @@ class DecisionTree(object):
         Hint: Run the test data through the decision tree built
                 during training (self.tree)
         """
-        pass
+        index = self.tree.get('split_index')
+        value = self.tree.get('split_value')
+        self.tree.get('left')
+        if x_test[index] < value:
+            if type(self.tree.get('left')) is dict:
+                return self.predict(self.tree.get('left'), x_test)
+            else:
+                return self.tree.get('left')
+        else:
+            if type(self.tree.get('right')) is dict:
+                return self.predict(self.tree.get('right'), x_test)
+            else:
+                return self.tree.get('right')
 
 def get_formatted_data(X, y):
     return np.insert(X, len(X[0]), y, axis=1)
@@ -246,13 +283,20 @@ def main(X, y):
         for i, (train_index, test_index) in enumerate(kf.split(X)):
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
+            breakpoint()
             dt.fit(X_train, y_train)
-            y_pred = dt.predict(X_test)
-            total_f1_score += f1_score(y_test, y_pred)
+            predictions_for_each = []
+            for each_X_test in X_test:
+                predictions_for_each.append(dt.predict(each_X_test))
+            total_f1_score += f1_score(y_test, predictions_for_each)
 
         print(f"Total Score = {total_f1_score/5}")
         print(f"Time Taken = {(timer() - start_time) * 1000} ms")
 
+if __name__ == '__main__':
+    X_t = np.genfromtxt('../../Data/x_train.csv', delimiter=',')
+    y_t = np.genfromtxt('../../Data/y_train.csv', delimiter=',')
+    main(X=X_t, y=y_t)
 
 
 

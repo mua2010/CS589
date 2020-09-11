@@ -115,7 +115,7 @@ def main(X, y):
         for i, (train_index, test_index) in enumerate(kf.split(X)):
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
-            # breakpoint()
+            breakpoint()
             knn.fit(X_train, y_train)
             y_pred = knn.predict(X_test)
             total_f1_score += f1_score(y_test, y_pred)
