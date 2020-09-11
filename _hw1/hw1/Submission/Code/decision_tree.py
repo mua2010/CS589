@@ -1,4 +1,5 @@
 import time
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -21,23 +22,6 @@ def f1_score(y_true, y_pred):
     Return
     ------
     score   : the F1 score, shaped (N,)
-
-    """
-    """
-    Function for calculating the F1 score
-
-    Params
-    ------
-    y_true  : the true labels shaped (N, C), 
-              N is the number of datapoints
-              C is the number of classes
-    y_pred  : the predicted labels, same shape
-              as y_true
-
-    Return
-    ------
-    score   : the F1 score, shaped (N,)
-
     """
     FRAUD  = 1
     NORMAL = 0
@@ -71,7 +55,8 @@ def f1_score(y_true, y_pred):
     return 2 * ((precision * recall) \
               / (precision + recall))
 
-def gini_index(groups, classes):
+
+def gini_index(groups, classes, sub_y_train):
     """
     Function for calculating the gini index
         -- The goodness of the split
@@ -87,25 +72,28 @@ def gini_index(groups, classes):
     ------
     gini    : the gini index of the split
     """
-    gini_index = 0.0
+    _gini_index = 0.0
 
-    number_of_samples = 0
-    for group in groups:
-        number_of_samples += len(group)
+    left_split = groups['left']
+    right_split = groups['right']
+    number_of_samples = len(left_split) + len(right_split)
     
-    # Calculating sum of the gini index for each group
-    for group in groups:
-        if len(group) != 0:
+    def gini_index_helper(group):
+        # Calculating sum of the gini index for each group
+        nonlocal _gini_index
+        length_of_current_group = len(group)
+        if length_of_current_group != 0:
             score = 0 # will store the score for class
             for _class in classes:
-                each_sub_group_list = list()
-                for each in group:
-                    each_sub_group_list.append(each[-1])
-                value = each_sub_group_list.count(_class) / len(group)
+                value = sub_y_train.count(_class) / length_of_current_group
                 score += value ** 2
-            gini_index += (len(group) / number_of_samples) \
-                          * (1.0 - score)
-    return gini_index
+            _gini_index += (length_of_current_group / number_of_samples) \
+                           * (1.0 - score)
+
+    gini_index_helper(left_split)
+    gini_index_helper(right_split)
+    return _gini_index
+
 
 def get_split(x_train, y_train):
     """
@@ -121,7 +109,40 @@ def get_split(x_train, y_train):
     ------
     {gini_index, split_index, split_value}
     """
-    pass
+    result = {
+        'gini_index': None,
+        'split_index': None,
+        'split_value': None,
+    }
+
+    classes = [0, 1]
+    best_gini = sys.maxsize
+    current_index = 0
+    length_of_a_row = len(x_train[0])
+    while current_index < length_of_a_row:
+        for i, row in enumerate(x_train):
+            current_value = row[current_index]
+            groups = {
+                'left': [],
+                'right': []
+            }
+            for row in x_train:
+                if row[current_index] >= current_value:
+                    groups['right'].append(row)
+                else:
+                    groups['left'].append(row)
+            current_gini = gini_index(groups, classes, y_train[i])
+            if current_gini < best_gini:
+                best_gini = current_gini
+                result['gini_index'] = best_gini
+                result['split_index'] = current_index
+                result['split_value'] = row[current_index]
+                # best_index = current_index
+                # best_value = row[best_index]
+                best_group = groups # Dictionary
+
+    return result
+
 
 ##########################################################
 # Alternatively combine gini_index into get_split and 

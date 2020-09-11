@@ -103,6 +103,7 @@ class KNN(object):
 
 
 def main(X, y):
+    breakpoint()
     # Example running the class KNN
     print('==========-KNN-==========')
     neighbors_list = [3, 5, 10, 20, 25]
@@ -126,5 +127,5 @@ def main(X, y):
             total_f1_score += f1_score(y_test, y_pred)
 
         print(f"Total Score = {total_f1_score/5}")
-        print(f"Time Taken = {timer() - start_time} seconds")
+        print(f"Time Taken = {(timer() - start_time) * 1000} ms")
 
