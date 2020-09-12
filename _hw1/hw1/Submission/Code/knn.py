@@ -52,7 +52,7 @@ def f1_score(y_true, y_pred):
 
     # Calculating f1 score and returning it
     return 2 * ((precision * recall) \
-              / (precision + recall))
+                / (precision + recall))
 
 
 class KNN(object):

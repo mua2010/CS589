@@ -52,7 +52,7 @@ def f1_score(y_true, y_pred):
 
     # Calculating f1 score and returning it
     return 2 * ((precision * recall) \
-              / (precision + recall))
+                / (precision + recall))
 
 
 def get_y_train_of_group(group):
@@ -124,7 +124,7 @@ def get_split(formatted_data):
     classes = [0, 1]
     best_gini = sys.maxsize
     current_index = 0
-    length_of_a_row = 29 # len(formatted_data[0]) - 1
+    length_of_a_row = len(formatted_data[0]) - 1
     while current_index < length_of_a_row:
         for i, row in enumerate(formatted_data):
             current_value = row[current_index]
@@ -170,7 +170,7 @@ class DecisionTree(object):
         self.max_depth = max_depth
         self.min_size = min_size
 
-    def split(self, data):
+    def split(self, current_node, current_depth):
         """
         Function called recursively to split
             the data in order to build a decision
@@ -184,46 +184,43 @@ class DecisionTree(object):
         Return
         ------
         """
-        def split_helper(current_node, current_depth):
-            groups = current_node.pop('best_groups')
-            left_node = groups.get('left')
-            right_node = groups.get('right')
-            if not (left_node or right_node):
-                self.set_most_repeated(left_node + right_node)
-                current_node['left'] = self.most_repeated_in_y_train_group
-                current_node['right'] = self.most_repeated_in_y_train_group
-                return
-            if current_depth < self.max_depth:
-                if len(left_node) > self.min_size:
-                    current_node['left'] = get_split(left_node)
-                    current_left_node = current_node['left']
-                    current_depth += 1
-                    split_helper(current_left_node, current_depth)
-                else:
-                    self.set_most_repeated(left_node)
-                    current_node['left'] = self.most_repeated_in_y_train_group
-
-                if len(right_node) > self.min_size:
-                    current_node['right'] = get_split(right_node)
-                    current_right_node = current_node['right']
-                    current_depth += 1
-                    split_helper(current_right_node, current_depth)
-                else:
-                    self.set_most_repeated(right_node)
-                    current_node['right'] = self.most_repeated_in_y_train_group
+        groups = current_node.pop('best_groups')
+        left_node = groups.get('left')
+        right_node = groups.get('right')
+        if not (left_node or right_node):
+            y_train_values = get_y_train_of_group(left_node + right_node)
+            self.most_repeated_in_y_train_group = max(set(y_train_values), key=y_train_values.count)
+            current_node['left'] = self.most_repeated_in_y_train_group
+            current_node['right'] = self.most_repeated_in_y_train_group
+            return
+        if current_depth < self.max_depth:
+            if len(left_node) > self.min_size:
+                current_node['left'] = get_split(left_node)
+                current_left_node = current_node['left']
+                current_depth += 1
+                self.split(current_left_node, current_depth)
             else:
-                self.set_most_repeated(left_node)
+                y_train_values = get_y_train_of_group(left_node)
+                self.most_repeated_in_y_train_group = max(set(y_train_values), key=y_train_values.count)
                 current_node['left'] = self.most_repeated_in_y_train_group
-                self.set_most_repeated(right_node)
+
+            if len(right_node) > self.min_size:
+                current_node['right'] = get_split(right_node)
+                current_right_node = current_node['right']
+                current_depth += 1
+                self.split(current_right_node, current_depth)
+            else:
+                y_train_values = get_y_train_of_group(right_node)
+                self.most_repeated_in_y_train_group = max(set(y_train_values), key=y_train_values.count)
                 current_node['right'] = self.most_repeated_in_y_train_group
+        else:
+            y_train_values = get_y_train_of_group(left_node)
+            self.most_repeated_in_y_train_group = max(set(y_train_values), key=y_train_values.count)
+            current_node['left'] = self.most_repeated_in_y_train_group
+            y_train_values = get_y_train_of_group(right_node)
+            self.most_repeated_in_y_train_group = max(set(y_train_values), key=y_train_values.count)
+            current_node['right'] = self.most_repeated_in_y_train_group
 
-        # groups = data.pop('best_groups')
-        split_helper(data, 1)
-
-
-    def set_most_repeated(self, group):
-        y_train_values = get_y_train_of_group(group)
-        self.most_repeated_in_y_train_group = max(set(y_train_values), key=y_train_values.count)
         
     def fit(self, x_train, y_train):
         """
@@ -237,7 +234,7 @@ class DecisionTree(object):
         self.formatted_data = get_formatted_data(x_train, y_train)
         self.tree = get_split(self.formatted_data)
         self.groups = self.tree.get('best_groups')
-        self.split(self.tree)
+        self.split(self.tree, 1)
 
     def predict(self, x_test):
         """
@@ -248,19 +245,13 @@ class DecisionTree(object):
         """
         index = self.tree.get('split_index')
         value = self.tree.get('split_value')
-        if x_test[index] < value:
-            left = self.tree.get('left')
-            if type(left) is dict:
-                return self.predict(left, x_test)
-            else:
-                return left
-        else:
-            right = self.tree.get('right')
-            if type(right) is dict:
-                return self.predict(right, x_test)
-            else:
-                return right
 
+        if x_test[index] >= value:
+            return self.tree.get('right')
+        else:
+            return self.tree.get('left')
+      
+                
 def get_formatted_data(X, y):
     return np.insert(X, len(X[0]), y, axis=1)
     # data_hashmap = dict()
@@ -295,10 +286,3 @@ def main(X, y):
 
         print(f"Total Score = {total_f1_score/5}")
         print(f"Time Taken = {(timer() - start_time) * 1000} ms")
-
-if __name__ == '__main__':
-    X_t = np.genfromtxt('../../Data/x_train.csv', delimiter=',')
-    y_t = np.genfromtxt('../../Data/y_train.csv', delimiter=',')
-    main(X=X_t, y=y_t)
-
-
