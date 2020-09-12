@@ -43,8 +43,12 @@ def f1_score(y_true, y_pred):
             elif current_y_pred == NORMAL:
                 false_negatives += 1
 
-    precision = true_positives / (true_positives + false_positives)
-    recall = true_positives / (true_positives + false_negatives)
+    try:
+        precision = true_positives / (true_positives + false_positives)
+        recall = true_positives / (true_positives + false_negatives)
+    except Exception:
+        precision = 1
+        recall = 0
 
     # Calculating f1 score and returning it
     return 2 * ((precision * recall) \
@@ -115,7 +119,6 @@ def main(X, y):
         for i, (train_index, test_index) in enumerate(kf.split(X)):
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
-            breakpoint()
             knn.fit(X_train, y_train)
             y_pred = knn.predict(X_test)
             total_f1_score += f1_score(y_test, y_pred)

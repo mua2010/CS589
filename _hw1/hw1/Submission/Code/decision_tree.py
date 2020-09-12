@@ -43,8 +43,12 @@ def f1_score(y_true, y_pred):
             elif current_y_pred == NORMAL:
                 false_negatives += 1
 
-    precision = true_positives / (true_positives + false_positives)
-    recall = true_positives / (true_positives + false_negatives)
+    try:
+        precision = true_positives / (true_positives + false_positives)
+        recall = true_positives / (true_positives + false_negatives)
+    except Exception:
+        precision = 1
+        recall = 0
 
     # Calculating f1 score and returning it
     return 2 * ((precision * recall) \
@@ -181,7 +185,7 @@ class DecisionTree(object):
         ------
         """
         def split_helper(current_node, current_depth):
-            groups = current_node.pop('groups')
+            groups = current_node.pop('best_groups')
             left_node = groups.get('left')
             right_node = groups.get('right')
             if not (left_node or right_node):
@@ -213,7 +217,7 @@ class DecisionTree(object):
                 self.set_most_repeated(right_node)
                 current_node['right'] = self.most_repeated_in_y_train_group
 
-        # groups = data.pop('groups')
+        # groups = data.pop('best_groups')
         split_helper(data, 1)
 
 
@@ -231,7 +235,6 @@ class DecisionTree(object):
 
         """
         self.formatted_data = get_formatted_data(x_train, y_train)
-        breakpoint()
         self.tree = get_split(self.formatted_data)
         self.groups = self.tree.get('best_groups')
         self.split(self.tree)
@@ -245,17 +248,18 @@ class DecisionTree(object):
         """
         index = self.tree.get('split_index')
         value = self.tree.get('split_value')
-        self.tree.get('left')
         if x_test[index] < value:
-            if type(self.tree.get('left')) is dict:
-                return self.predict(self.tree.get('left'), x_test)
+            left = self.tree.get('left')
+            if type(left) is dict:
+                return self.predict(left, x_test)
             else:
-                return self.tree.get('left')
+                return left
         else:
-            if type(self.tree.get('right')) is dict:
-                return self.predict(self.tree.get('right'), x_test)
+            right = self.tree.get('right')
+            if type(right) is dict:
+                return self.predict(right, x_test)
             else:
-                return self.tree.get('right')
+                return right
 
 def get_formatted_data(X, y):
     return np.insert(X, len(X[0]), y, axis=1)
@@ -283,7 +287,6 @@ def main(X, y):
         for i, (train_index, test_index) in enumerate(kf.split(X)):
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
-            breakpoint()
             dt.fit(X_train, y_train)
             predictions_for_each = []
             for each_X_test in X_test:
@@ -297,8 +300,5 @@ if __name__ == '__main__':
     X_t = np.genfromtxt('../../Data/x_train.csv', delimiter=',')
     y_t = np.genfromtxt('../../Data/y_train.csv', delimiter=',')
     main(X=X_t, y=y_t)
-
-
-
 
 
