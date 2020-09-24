@@ -1,0 +1,77 @@
+==========-Best Model File - AVG Val. Set-==========
+------------------
+Depth = 3
+------------------
+Total Precision = 0.8226423902894491
+Total Recall = 0.7183096422648662
+Total f1 Score = 0.7641168049088275
+Total auc Score = 0.8590246046425662
+Time Taken = 11488.845199999998 ms
+------------------
+Depth = 6
+------------------
+Total Precision = 0.8816437826111635
+Total Recall = 0.7661521148834581
+Total f1 Score = 0.8184761099394919
+Total auc Score = 0.8829909173329682
+Time Taken = 22446.4853 ms
+------------------
+Depth = 9
+------------------
+Total Precision = 0.886767043299551
+Total Recall = 0.7499258287317989
+Total f1 Score = 0.8111408752360324
+Total auc Score = 0.8748827801383751
+Time Taken = 32582.282399999996 ms
+------------------
+Depth = 12
+------------------
+Total Precision = 0.8415245703544576
+Total Recall = 0.7399499753977365
+Total f1 Score = 0.7857216508316643
+Total auc Score = 0.8698572906784175
+Time Taken = 42639.069899999995 ms
+------------------
+Depth = 15
+------------------
+Total Precision = 0.7912808482121063
+Total Recall = 0.751402966850728
+Total f1 Score = 0.7680396921573343
+Total auc Score = 0.875533706275157
+Time Taken = 52954.72910000001 ms
+==========-Best Model File - FULL Training Set-==========
+------------------
+Depth = 3
+------------------
+Total Precision = 0.175
+Total Recall = 0.1467065868263473
+Total f1 Score = 0.15960912052117263
+Total auc Score = 0.17333576413928625
+------------------
+Depth = 6
+------------------
+Total Precision = 0.1965034965034965
+Total Recall = 0.16826347305389222
+Total f1 Score = 0.18129032258064517
+Total auc Score = 0.1841292323449622
+------------------
+Depth = 9
+------------------
+Total Precision = 0.2
+Total Recall = 0.17065868263473055
+Total f1 Score = 0.1841680129240711
+Total auc Score = 0.18532934131736528
+------------------
+Depth = 12
+------------------
+Total Precision = 0.19865319865319866
+Total Recall = 0.17664670658682635
+Total f1 Score = 0.18700475435816166
+Total auc Score = 0.18832235162061958
+------------------
+Depth = 15
+------------------
+Total Precision = 0.19936102236421724
+Total Recall = 0.18682634730538922
+Total f1 Score = 0.19289026275115922
+Total auc Score = 0.19341267281629784

@@ -60,7 +60,7 @@ def main(X, y, x_test):
         runtimes.append(current_runtime)
         print(f"Time Taken = {current_runtime} ms")
 
-    plt.figure("Best Model")
+    plt.figure("AVG Val. Set")
     plt.plot(depths, runtimes)
     plt.xlabel("Depth")
     plt.ylabel("Time (ms)")
@@ -96,4 +96,4 @@ def main(X, y, x_test):
     # Saving the prediction with best depth
     clf = DecisionTreeClassifier(max_depth=6, min_samples_split=5)
     clf.fit(X, y)
-    np.savetxt("../Predictions/prediction_of_test_set.csv", clf.predict(x_test), delimiter=",")
+    np.savetxt("../Predictions/best.csv", clf.predict(x_test), delimiter=",")
