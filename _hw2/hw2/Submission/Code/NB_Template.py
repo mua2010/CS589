@@ -33,7 +33,7 @@ class BagOfWords(object):
         """
         
         valid_text_list = re.sub(r'[^\w\s]', '', text.lower()).split()
-        return [word for word in valid_text_list if len(valid_text_list) > 1]
+        return [word for word in valid_text_list if len(word) > 1]
 
     def fit(self, X_train):
         """
@@ -56,16 +56,38 @@ class BagOfWords(object):
         Transform the texts into word count vectors (representation matrix)
             using the fitted vocabulary
         """
-        pass
+        representation_matrix = list()
+        for each_review in X:
+            preprocessed_review = self.preprocess(each_review)
+            vector = np.zeros(self.vocabulary_size)
+            for word in preprocessed_review:
+                try:
+                    vector[self.vocabulary.index(word)] += 1
+                except:
+                    continue
+            representation_matrix.append(vector)
+        return np.array(representation_matrix)
 
 class NaiveBayes(object):
-    def __init__(self, beta=1, n_classes=2):
+    def __init__(self, beta=1, n_classes=2, vocabulary_size=None):
         """
         Initialize the Naive Bayes model
             w/ beta and n_classes
         """
         self.beta = beta
         self.n_classes = n_classes
+        self.vocabulary_size = vocabulary_size
+        self.conditionals_positives = dict()
+        self.conditionals_negatives = dict()
+
+    def set_priors(self):
+        self.priors = Counter(self.y_train)
+
+    def set_X_train_p_n(self):
+        positive_samples = self.X_train[np.where(self.y_train==1)[0]]
+        negative_samples = self.X_train[np.where(self.y_train==0)[0]]
+        self.positives = np.sum(positive_samples, axis=0)
+        self.negatives = np.sum(negative_samples, axis=0)
 
     def fit(self, X_train, y_train):
         """
@@ -73,7 +95,19 @@ class NaiveBayes(object):
             - build the conditional probabilities
             - and the prior probabilities
         """
-        pass
+        self.y_train = y_train
+        self.X_train = X_train
+        self.set_priors()
+        number_of_unique_labels =  len(self.priors.keys())
+        number_of_labels = len(y_train)
+        for label in self.priors.keys():
+            self.priors[label] += (self.beta - 1) \
+                                 / (number_of_labels 
+                                    + ((self.beta - 1) \
+                                    * number_of_unique_labels))
+        self.set_X_train_p_n()
+        
+
 
     def predict(self, X_test):
         """
@@ -124,11 +158,14 @@ def main():
     # Load in data
     X_train, y_train, X_valid, y_valid, X_test = load_data(return_numpy=True)
 
-    # Fit the Naive Bayes model for Q1.3
-    nb = NaiveBayes(beta=1)
-    nb.fit(X_train, y_train)
-    y_pred = nb.predict(X_valid)
-    print(confusion_matrix(y_valid, y_pred))
+    betas = [1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]#[1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
+    ROC_AUC_list = []
+    for beta in betas:
+        # Fit the Naive Bayes model for Q1.3
+        nb = NaiveBayes(beta=beta, n_classes=2, vocabulary=vocabulary)
+        nb.fit(X_train, y_train)
+        y_pred = nb.predict(X_valid)
+        # print(confusion_matrix(y_valid, y_pred))
 
 
 if __name__ == '__main__':
