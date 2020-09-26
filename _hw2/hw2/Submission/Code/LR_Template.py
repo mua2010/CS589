@@ -25,7 +25,10 @@ def conf_mat(y_true, y_pred):
         - y_true: the true labels for the data
         - y_pred: the predicted labels
     """
-    #TODO: compute and return confusion matrix
+    # compute and return confusion matrix
+    true = pd.Series(y_true, name='True')
+    predicted = pd.Series(y_pred, name='Predicted')
+    return pd.crosstab(true, predicted)
     
 class LogisticRegression(object):
   def __init__(self, input_size, reg=0.0, std=1e-4):
