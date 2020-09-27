@@ -225,6 +225,7 @@ def load_data(return_numpy=False):
 _vocabulary_size = None
 
 def main():
+    print("------- NB FILE -------")
     # Load in data
     X_train, y_train, X_valid, y_valid, X_test = load_data(return_numpy=False)
     # Fit the Bag of Words model for Q1.1
@@ -239,7 +240,8 @@ def main():
     X_train, y_train, X_valid, y_valid, X_test = load_data(return_numpy=True)
     print("| Naive Bayes model |")
     betas = [1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
-    roc_auc_list = []
+    roc_auc_list = list()
+    accuracy_list = list()
     for beta in betas:
         # Fit the Naive Bayes model for Q1.3
         print(f"--- Beta = {beta} ---")
@@ -257,6 +259,7 @@ def main():
         print(f"f1 score = {f1}")
         accuracy = accuracy_score(y_valid, y_pred)
         print(f"accuracy = {accuracy*100} percent")
+        accuracy_list.append(accuracy)
         recall = recall_score(y_valid, y_pred)
         print(f"Recall Score = {recall}")
         precision = precision_score(y_valid, y_pred)
@@ -266,7 +269,9 @@ def main():
     pyplot.plot(roc_auc_list, betas)
     pyplot.ylabel("beta")
     pyplot.xlabel("roc auc score")
-    pyplot.show()
+    pyplot.savefig('../Figures/nb_plot.png')
+    print(f"Greated ROC AUC = {max(roc_auc_list)}")
+    print(f"Greated Accuracy = {max(accuracy_list)}")
 
 if __name__ == '__main__':
     main()

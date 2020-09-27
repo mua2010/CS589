@@ -1,0 +1,127 @@
+| Bag of Words model |
+
+['the', 'and', 'it', 'is', 'this', 'to', 'in', 'but', 'with', 'of']
+[ 357,   203,   181,  129,  116,    106,  99,   74,     65,    49]
+
+| Naive Bayes model |
+
+--- Beta = 1.1 ---
+Confusion Matrix
+Predicted    0     1
+True
+0          304    76
+1          194  2725
+ROC AUC score = 0.915640269739096
+f1 score = 0.9527972027972028
+accuracy = 91.81570172779631 percent
+Recall Score = 0.933538883179171
+Precision Score = 0.9728668332738307
+
+--- Beta = 1.2 ---
+Confusion Matrix
+Predicted    0     1
+True
+0          317    63
+1          217  2702
+ROC AUC score = 0.918485512342006
+f1 score = 0.9507389162561577
+accuracy = 91.51257956956653 percent
+Recall Score = 0.9256594724220624
+Precision Score = 0.9772151898734177
+
+--- Beta = 1.3 ---
+Confusion Matrix
+Predicted    0     1
+True
+0          323    57
+1          239  2680
+ROC AUC score = 0.919634968716756
+f1 score = 0.9476661951909476
+accuracy = 91.02758411639891 percent
+Recall Score = 0.9181226447413497
+Precision Score = 0.979174278407015
+
+--- Beta = 1.4 ---
+Confusion Matrix
+Predicted    0     1
+True
+0          328    52
+1          257  2662
+ROC AUC score = 0.92024079984133
+f1 score = 0.9451446831173442
+accuracy = 90.63352531070021 percent
+Recall Score = 0.9119561493662213
+Precision Score = 0.9808400884303611
+
+--- Beta = 1.5 ---
+Confusion Matrix
+Predicted    0     1
+True
+0          331    49
+1          277  2642
+ROC AUC score = 0.9205716629703756
+f1 score = 0.9418894830659537
+accuracy = 90.1182176417096 percent
+Recall Score = 0.9051044878383008
+Precision Score = 0.9817911557041992
+
+--- Beta = 1.6 ---
+Confusion Matrix
+Predicted    0     1
+True
+0          335    45
+1          297  2622
+ROC AUC score = 0.9207690990065092
+f1 score = 0.9387755102040817
+accuracy = 89.63322218854198 percent
+Recall Score = 0.8982528263103803
+Precision Score = 0.983127109111361
+
+--- Beta = 1.7 ---
+Confusion Matrix
+Predicted    0     1
+True
+0          336    44
+1          312  2607
+ROC AUC score = 0.920815077261499
+f1 score = 0.9360861759425493
+accuracy = 89.20885116702031 percent
+Recall Score = 0.8931140801644398
+Precision Score = 0.983402489626556
+
+--- Beta = 1.8 ---
+Confusion Matrix
+Predicted    0     1
+True
+0          337    43
+1          327  2592
+ROC AUC score = 0.920794341970033
+f1 score = 0.9333813467770976
+accuracy = 88.78448014549863 percent
+Recall Score = 0.8879753340184995
+Precision Score = 0.9836812144212523
+
+--- Beta = 1.9 ---
+Confusion Matrix
+Predicted    0     1
+True
+0          339    41
+1          341  2578
+ROC AUC score = 0.9208024557797372
+f1 score = 0.9310220296135789
+accuracy = 88.42073355562292 percent
+Recall Score = 0.8831791709489552
+Precision Score = 0.9843451699121802
+
+--- Beta = 2.0 ---
+Confusion Matrix
+Predicted    0     1
+True
+0          341    39
+1          354  2565
+ROC AUC score = 0.9207267268891653
+f1 score = 0.928843020097773
+accuracy = 88.08729918157017 percent
+Recall Score = 0.8787255909558068
+Precision Score = 0.9850230414746544
+
