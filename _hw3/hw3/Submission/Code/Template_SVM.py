@@ -177,8 +177,9 @@ class SVM(object):
                 Predictions with values of -1 or 1.
         """
         # retrieve the parameters wb
-
+        w, b = self.get_params()
         # calculate the predictions
+        # y = np.sign(np.dot(np.array(features),self.w)+self.b)
 
         # return the predictions
         return y
@@ -225,7 +226,6 @@ def load_data():
     ------
     """
     df = pd.read_csv("../../Data/breast_cancer_data/data.csv")
-    breakpoint()
     cols = df.columns
     X = df[cols[2:-1]].to_numpy()
     y = df[cols[1]].to_numpy()
