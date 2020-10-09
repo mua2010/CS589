@@ -2,7 +2,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from sklearn import metrics
+from sklearn.metrics import (
+    f1_score,
+    precision_score,
+    recall_score
+)
 from sklearn import svm
 
 
@@ -36,11 +40,11 @@ class SVM(object):
         n_samples, n_features = X.shape
 
         # Initialize the parameters wb
-        wb = std * np.random.randn(n_features + 1) # +1 for bias term
-
-        # initialize any container needed for save results during training
+        wb = std * np.random.randn(n_features + 1)
         w, b = SVM.unpack_wb(wb, n_features)
         self.set_params(w, b)
+
+        # initialize any container needed for save results during training
         best_obj_f = None
         best_wb = None
         obj_list = []
@@ -292,8 +296,35 @@ def plot_decision_boundary(clf, X, y, title='SVM'):
     plt.title(title)
     plt.show()
 
-def ensembles_part_4(kernel, train_X, train_y, test_X, test_y):
+def svm_part_4(kernel, train_X, train_y, test_X, test_y):
+    print(f" - Kernel = {kernel} -")
+    result = {
+        "f1_score_train": None,
+        "precision_train": None,
+        "recall_train": None,
+        "f1_score_test": None,
+        "precision_test": None,
+        "recall_test": None
+    }
+    model = svm.SVC(kernel=kernel)
+    model.fit(train_X, train_y)
+    y_pred_train = model.predict(train_X)
+    result['f1_score_train'] = f1_score(train_y, y_pred_train)
+    result['precision_train'] = precision_score(train_y, y_pred_train)
+    result['recall_train'] = recall_score(train_y, y_pred_train)
+    y_pred_test = model.predict(test_X)
+    result['f1_score_test'] = f1_score(test_y, y_pred_test)
+    result['precision_test'] = precision_score(test_y, y_pred_test)
+    result['recall_test'] = recall_score(test_y, y_pred_test)
+    return result
 
+def svm_part_5(kernel, train_X, train_y):
+    model = svm.SVC(kernel=kernel)
+    model.fit(train_X, train_y)
+    plot_decision_boundary(
+        model, 
+        train_X, train_y,
+        title=f'SVM | kernel = {kernel}')
 
 def main():
     # Set the seed for numpy random number generator
@@ -303,23 +334,30 @@ def main():
     # Load in the training data and testing data
     train_X, train_y, test_X, test_y = load_data()
 
-    # Ensembles 2.4 
-    ensembles_part_4('linear', train_X, train_y, test_X, test_y)
-    ensembles_part_4('poly', train_X, train_y, test_X, test_y)
-    ensembles_part_4('rbf', train_X, train_y, test_X, test_y)
+    # SVM 1.4
+
+    # print(" - Q1.4 -")
+    # print(svm_part_4('linear', train_X, train_y, test_X, test_y))
+    # print(svm_part_4('poly', train_X, train_y, test_X, test_y))
+    # print(svm_part_4('rbf', train_X, train_y, test_X, test_y))
+
+    # SVM 1.5
 
     # For using the first two dimensions of the data
-    #train_X = train_X[:,:2]
-    #test_X = test_X[:,:2]
+    train_X_temp = train_X[:,:2]
+    # test_X_temp = test_X[:,:2]
+    print(" - Q1.5 -")
+    # svm_part_5('linear', train_X_temp, train_y)
+    # svm_part_5('poly', train_X_temp, train_y)
+    # svm_part_5('rbf', train_X_temp, train_y)
+    
 
     breakpoint()
-    clf = SVM(C=C)
+    clf = SVM(C=1)
     objs = clf.fit(train_X, train_y, lr=0.002, iterations=10000)
-
     train_preds  = clf.predict(train_X)
     test_preds  = clf.predict(test_X)
-
-    print(f"f1_score: [{metrics.f1_score(test_y, test_preds)}, {metrics.f1_score(train_y, train_preds)}]")
+    print(f"f1_score: [{f1_score(test_y, test_preds)}, {f1_score(train_y, train_preds)}]")
     #plot_decision_boundary(clf, train_X, train_y)
 
 
