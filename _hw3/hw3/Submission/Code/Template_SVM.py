@@ -36,32 +36,50 @@ class SVM(object):
         n_samples, n_features = X.shape
 
         # Initialize the parameters wb
+        wb = std * np.random.randn(n_features + 1) # +1 for bias term
 
         # initialize any container needed for save results during training
+        w, b = SVM.unpack_wb(wb, n_features)
+        self.set_params(w, b)
+        best_obj_f = None
+        best_wb = None
+        obj_list = []
 
         for i in range(iterations):
             pass
             # calculate learning rate with iteration number i
+            lr_t = lr / ((i + 1) ** 0.5)
 
             # calculate the subgradients
+            subgradients = self.subgradient(wb, X, y)
 
             # update the parameter wb with the gradients
+            wb = wb - subgradients * lr_t
 
             # calculate the new objective function value
-
+            obj_f = self.objective(wb, X, y)
 
             # compare the current objective function value with the saved best value
             # update the best value if the current one is better
-
+            obj_list.append(obj_f)
+            if best_obj_f is None:
+                best_obj_f = obj_f
+                best_wb = wb
+            else:
+                if obj_f < best_obj_f:
+                    best_obj_f = obj_f
+                    best_wb = wb
             # Logging
             #if (i+1)%1000 == 0:
             #    print(f"Training step {i+1:6d}: LearningRate[{lr_t:.7f}], Objective[{f:.7f}]")
 
         # Save the best parameter found during training 
+        self.wb = best_wb
+        self.w, self.b = self.unpack_wb(self.wb, n_features)
 
         # optinally return recorded objective function values (for debugging purpose) to see
         # if the model is converging
-        # return
+        return obj_list
 
     @staticmethod
     def unpack_wb(wb, n_features):
@@ -274,6 +292,8 @@ def plot_decision_boundary(clf, X, y, title='SVM'):
     plt.title(title)
     plt.show()
 
+def ensembles_part_4(kernel, train_X, train_y, test_X, test_y):
+
 
 def main():
     # Set the seed for numpy random number generator
@@ -283,11 +303,16 @@ def main():
     # Load in the training data and testing data
     train_X, train_y, test_X, test_y = load_data()
 
+    # Ensembles 2.4 
+    ensembles_part_4('linear', train_X, train_y, test_X, test_y)
+    ensembles_part_4('poly', train_X, train_y, test_X, test_y)
+    ensembles_part_4('rbf', train_X, train_y, test_X, test_y)
+
     # For using the first two dimensions of the data
     #train_X = train_X[:,:2]
     #test_X = test_X[:,:2]
 
-
+    breakpoint()
     clf = SVM(C=C)
     objs = clf.fit(train_X, train_y, lr=0.002, iterations=10000)
 
