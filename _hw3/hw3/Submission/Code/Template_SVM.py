@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import sys
+from math import pow
 from sklearn.metrics import (
     f1_score,
     precision_score,
@@ -40,42 +41,36 @@ class SVM(object):
         n_samples, n_features = X.shape
 
         # Initialize the parameters wb
-        wb = std * np.random.randn(n_features + 1)
+        wb = np.random.randn(n_features + 1)
         w, b = SVM.unpack_wb(wb, n_features)
         self.set_params(w, b)
 
         # initialize any container needed for save results during training
-        best_obj_f = None
+        best_objective_function = sys.maxsize
         best_wb = None
-        obj_list = []
 
-        for i in range(iterations):
-            pass
+        for i in range(1, iterations + 1):
             # calculate learning rate with iteration number i
-            lr_t = lr / ((i + 1) ** 0.5)
+            lr_t = lr / pow((i), 1/2)
 
             # calculate the subgradients
             subgradients = self.subgradient(wb, X, y)
 
             # update the parameter wb with the gradients
-            wb = wb - subgradients * lr_t
+            wb -= subgradients * lr_t
 
             # calculate the new objective function value
-            obj_f = self.objective(wb, X, y)
+            objective_function = self.objective(wb, X, y)
 
             # compare the current objective function value with the saved best value
             # update the best value if the current one is better
-            obj_list.append(obj_f)
-            if best_obj_f is None:
-                best_obj_f = obj_f
+            if objective_function < best_objective_function:
+                best_objective_function = objective_function
                 best_wb = wb
-            else:
-                if obj_f < best_obj_f:
-                    best_obj_f = obj_f
-                    best_wb = wb
+
             # Logging
-            #if (i+1)%1000 == 0:
-            #    print(f"Training step {i+1:6d}: LearningRate[{lr_t:.7f}], Objective[{f:.7f}]")
+            if (i+1)%1000 == 0:
+               print(f"Training step {i+1:6d}: LearningRate[{lr_t:.7f}], Objective[{objective_function:.7f}]")
 
         # Save the best parameter found during training 
         self.wb = best_wb
@@ -83,7 +78,7 @@ class SVM(object):
 
         # optinally return recorded objective function values (for debugging purpose) to see
         # if the model is converging
-        return obj_list
+        # return
 
     @staticmethod
     def unpack_wb(wb, n_features):
@@ -143,7 +138,9 @@ class SVM(object):
 
         # Calculate the objective function value 
         # Be careful with the hinge loss function
-
+        hinge = self.hinge_loss(X, y, wb)[0]
+        obj = np.sum(hinge) \
+              + pow(np.sum(np.square(wb[0:len(wb)-1])), 1/2)
         return obj
 
     def subgradient(self, wb, X, y):
@@ -201,8 +198,9 @@ class SVM(object):
         # retrieve the parameters wb
         w, b = self.get_params()
         # calculate the predictions
-        # y = np.sign(np.dot(np.array(features),self.w)+self.b)
-
+        breakpoint()
+        y = np.sign(np.dot(np.array(X), self.w) + self.b)
+        y = y.astype(int)
         # return the predictions
         return y
 
@@ -336,7 +334,7 @@ def main():
 
     # SVM 1.4
 
-    # print(" - Q1.4 -")
+    print(" - Q1.4 -")
     # print(svm_part_4('linear', train_X, train_y, test_X, test_y))
     # print(svm_part_4('poly', train_X, train_y, test_X, test_y))
     # print(svm_part_4('rbf', train_X, train_y, test_X, test_y))
@@ -357,8 +355,9 @@ def main():
     objs = clf.fit(train_X, train_y, lr=0.002, iterations=10000)
     train_preds  = clf.predict(train_X)
     test_preds  = clf.predict(test_X)
-    print(f"f1_score: [{f1_score(test_y, test_preds)}, {f1_score(train_y, train_preds)}]")
-    #plot_decision_boundary(clf, train_X, train_y)
+    breakpoint()
+    print(f"f1_score: \n TEST = {f1_score(test_y, test_preds)} \n TRAIN = {f1_score(train_y, train_preds)}")
+    plot_decision_boundary(clf, train_X, train_y)
 
 
 

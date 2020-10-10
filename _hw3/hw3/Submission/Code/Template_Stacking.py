@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.ensemble import StackingClassifier
 import pandas as pd
+from sklearn.metrics import f1_score
 # feel free to import any sklearn model here
 
 
@@ -39,8 +40,10 @@ def main():
     # Create your stacked model using StackingClassifier
 
     # fit the model on the training data
-    
+    model.fit(train_X, train_y)
     # Get and print f1-score on test data
+    y_pred = model.predict(test_X)
+    print(f"f1 score = {f1_score(y_pred, test_y , average = 'weighted')}")
 
 if __name__ == '__main__':
     main()
