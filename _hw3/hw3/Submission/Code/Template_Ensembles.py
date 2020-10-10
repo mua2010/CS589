@@ -74,7 +74,6 @@ def main():
     plt.ylabel("Test Classification Error")
     plt.xlabel("# of Trees (n_estimators)")
     plt.legend(loc=1)
-    plt.ylim(0,1)
     # plt.show()
     plt.savefig('../Figures/ensemble_randomforest_Q2.4_plot.png')
     

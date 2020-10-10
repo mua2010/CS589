@@ -135,7 +135,6 @@ class SVM(object):
         ------
         obj (float): value of the objective function evaluated on X and y.
         """
-        n_samples, n_features = X.shape
 
         # Calculate the objective function value 
         # Be careful with the hinge loss function
@@ -332,6 +331,8 @@ def main():
 
     # Load in the training data and testing data
     train_X, train_y, test_X, test_y = load_data()
+    # train_X = train_X[:,:2]
+    # test_X = test_X[:,:2]
 
     # SVM 1.3
 
