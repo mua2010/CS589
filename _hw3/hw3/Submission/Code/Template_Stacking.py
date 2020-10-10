@@ -46,26 +46,24 @@ def main():
     
     # Stacking models:
     # Create your stacked model using StackingClassifier
-    models = [
-        ('rf', RandomForestClassifier()),
+    base_models = [
+        ('rfc', RandomForestClassifier()),
         ('svm', SVC()),
-        ('bayes', GaussianNB()),
-        ('knn', KNeighborsClassifier()),
-        ('cart', DecisionTreeClassifier())
+        ('gnb', GaussianNB()),
+        ('knc', KNeighborsClassifier()),
+        ('dtc', DecisionTreeClassifier())
     ]
-    # define meta learner model
-    final_estimator_model = LogisticRegression()
-    # define the stacking ensemble
-    sc = StackingClassifier(
-        estimators=models, 
-        final_estimator=final_estimator_model, 
-        cv=5
-    )
+    
+    # The default final_estimator is LogisticRegression
+    sc = StackingClassifier(estimators=base_models)
 
     # fit the model on the training data
     sc.fit(train_X, train_y)
-    # Get and print f1-score on test data
+
+    # predict
     y_pred = sc.predict(test_X)
+
+    # Get and print f1-score on test data
     print(f"f1 score = {f1_score(y_pred, test_y , average = 'weighted')}")
 
 if __name__ == '__main__':
