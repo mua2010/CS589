@@ -38,10 +38,10 @@ class SVM(object):
         lr          :   learning rate
         iterations  :   number of iterations
         """
-        n_samples, n_features = X.shape
+        n_features = X.shape[1] + 1
 
         # Initialize the parameters wb
-        wb = np.random.randn(n_features + 1)
+        wb = np.random.randn(n_features)
         w, b = SVM.unpack_wb(wb, n_features)
         self.set_params(w, b)
 
@@ -57,7 +57,8 @@ class SVM(object):
             subgradients = self.subgradient(wb, X, y)
 
             # update the parameter wb with the gradients
-            wb -= subgradients * lr_t
+            # breakpoint()
+            wb -= (subgradients * lr_t)
 
             # calculate the new objective function value
             objective_function = self.objective(wb, X, y)
@@ -69,12 +70,12 @@ class SVM(object):
                 best_wb = wb
 
             # Logging
-            if (i+1)%1000 == 0:
-               print(f"Training step {i+1:6d}: LearningRate[{lr_t:.7f}], Objective[{objective_function:.7f}]")
+            if (i)%1000 == 0:
+               print(f"Training step {i:6d}: LearningRate[{lr_t:.7f}], Objective[{objective_function:.7f}]")
 
         # Save the best parameter found during training 
-        self.wb = best_wb
-        self.w, self.b = self.unpack_wb(self.wb, n_features)
+        w, b = SVM.unpack_wb(best_wb, n_features)
+        self.set_params(w=w, b=b)
 
         # optinally return recorded objective function values (for debugging purpose) to see
         # if the model is converging
@@ -198,11 +199,11 @@ class SVM(object):
         # retrieve the parameters wb
         w, b = self.get_params()
         # calculate the predictions
-        breakpoint()
-        y = np.sign(np.dot(np.array(X), self.w) + self.b)
-        y = y.astype(int)
+        y = list()
+        for each in X:
+            y.append(np.sign(np.dot(np.array(each), w[:-1]) + b).astype(int))
         # return the predictions
-        return y
+        return np.array(y)
 
     def get_params(self):
         """
@@ -332,34 +333,34 @@ def main():
     # Load in the training data and testing data
     train_X, train_y, test_X, test_y = load_data()
 
+    # SVM 1.3
+
+    print("\n - Q1.3 - \n")
+    clf = SVM(C=1)
+    objs = clf.fit(train_X, train_y, lr=0.002, iterations=10000)
+    train_preds  = clf.predict(train_X)
+    test_preds  = clf.predict(test_X)
+    print(f"f1_score: \n TEST = {f1_score(test_y, test_preds)} \n TRAIN = {f1_score(train_y, train_preds)}")
+    print(f"Precision: \n TEST = {precision_score(test_y, test_preds)} \n TRAIN = {precision_score(train_y, train_preds)}")
+    print(f"Recall: \n TEST = {recall_score(test_y, test_preds)} \n TRAIN = {recall_score(train_y, train_preds)}")
+    # plot_decision_boundary(clf, train_X, train_y)
+
     # SVM 1.4
 
-    print(" - Q1.4 -")
-    # print(svm_part_4('linear', train_X, train_y, test_X, test_y))
-    # print(svm_part_4('poly', train_X, train_y, test_X, test_y))
-    # print(svm_part_4('rbf', train_X, train_y, test_X, test_y))
+    print("\n - Q1.4 - \n")
+    print(svm_part_4('linear', train_X, train_y, test_X, test_y))
+    print(svm_part_4('poly', train_X, train_y, test_X, test_y))
+    print(svm_part_4('rbf', train_X, train_y, test_X, test_y))
 
     # SVM 1.5
 
     # For using the first two dimensions of the data
     train_X_temp = train_X[:,:2]
     # test_X_temp = test_X[:,:2]
-    print(" - Q1.5 -")
-    # svm_part_5('linear', train_X_temp, train_y)
-    # svm_part_5('poly', train_X_temp, train_y)
-    # svm_part_5('rbf', train_X_temp, train_y)
+    print("\n - Q1.5 - \n")
+    svm_part_5('linear', train_X_temp, train_y)
+    svm_part_5('poly', train_X_temp, train_y)
+    svm_part_5('rbf', train_X_temp, train_y)
     
-
-    breakpoint()
-    clf = SVM(C=1)
-    objs = clf.fit(train_X, train_y, lr=0.002, iterations=10000)
-    train_preds  = clf.predict(train_X)
-    test_preds  = clf.predict(test_X)
-    breakpoint()
-    print(f"f1_score: \n TEST = {f1_score(test_y, test_preds)} \n TRAIN = {f1_score(train_y, train_preds)}")
-    plot_decision_boundary(clf, train_X, train_y)
-
-
-
 if __name__ == '__main__':
     main()
