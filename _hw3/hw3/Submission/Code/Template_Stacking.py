@@ -2,10 +2,18 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.ensemble import StackingClassifier
+from sklearn.ensemble import (
+    StackingClassifier,
+    RandomForestClassifier
+) 
 import pandas as pd
 from sklearn.metrics import f1_score
 # feel free to import any sklearn model here
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
 
 
 def load_data():
@@ -38,11 +46,26 @@ def main():
     
     # Stacking models:
     # Create your stacked model using StackingClassifier
+    models = [
+        ('rf', RandomForestClassifier()),
+        ('svm', SVC()),
+        ('bayes', GaussianNB()),
+        ('knn', KNeighborsClassifier()),
+        ('cart', DecisionTreeClassifier())
+    ]
+    # define meta learner model
+    final_estimator_model = LogisticRegression()
+    # define the stacking ensemble
+    sc = StackingClassifier(
+        estimators=models, 
+        final_estimator=final_estimator_model, 
+        cv=5
+    )
 
     # fit the model on the training data
-    model.fit(train_X, train_y)
+    sc.fit(train_X, train_y)
     # Get and print f1-score on test data
-    y_pred = model.predict(test_X)
+    y_pred = sc.predict(test_X)
     print(f"f1 score = {f1_score(y_pred, test_y , average = 'weighted')}")
 
 if __name__ == '__main__':
