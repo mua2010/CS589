@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import sys
 
 from sklearn.model_selection import ParameterGrid
 from sklearn.metrics import mean_absolute_error
@@ -42,7 +43,7 @@ def score(model, X, y):
     ------
     mae:    the mean absolute error
     """
-    pass
+    return mean_absolute_error(y, model.predict(X))
 
 
 def hyper_parameter_tuning(model_class, param_grid, train, valid):
@@ -67,12 +68,30 @@ def hyper_parameter_tuning(model_class, param_grid, train, valid):
     # Set up the parameter grid
     param_grid = list(ParameterGrid(param_grid))
 
-    # train the model with each parameter setting in the grid
+    # setting vars
+    minimum_mae = sys.maxsize
+    best_params = None
 
-    # choose the model with lowest MAE on validation set
+    # train the model with each parameter setting in the grid
+    for params in param_grid:
+        mc = model_class(**params)
+        mc.fit(train_X, train_y)
+        y_pred_val = mc.predict(valid_X)
+        mae = mean_absolute_error(valid_y, y_pred_val)
+        # choose the model with lowest MAE on validation set
+        if mae < minimum_mae:
+            minimum_mae = mae
+            best_params = params
+
     # then fit the model with the training and validation set (refit)
+    best_model = model_class(**best_params)
+    train_X = np.concatenate([train[0], valid[0]], axis=0)
+    train_y = np.concatenate([train[1], valid[1]], axis=0)
+    best_model.fit(train_X, train_y)
 
     # return the fitted model and the best parameter setting
+    return best_model, best_params
+
 
 def plot_mae_alpha(model_class, params, train, valid, test, title="Model"):
     """
@@ -93,13 +112,29 @@ def plot_mae_alpha(model_class, params, train, valid, test, title="Model"):
     """
     train_X = np.concatenate([train[0], valid[0]], axis=0)
     train_y = np.concatenate([train[1], valid[1]], axis=0)
+    test_x, test_y = test
 
     # set up the list of alphas to train on
+    alpha_and_mae_list = {
+        "alphas": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+        "maes": list()
+    }
 
     # train the model with each alpha, log MAE
+    for alpha in alpha_and_mae_list.get("alphas"):
+        params['alpha'] = alpha
+        model = model_class(**params)
+        model.fit(train_X, train_y)
+        y_pred = model.predict(test_x)
+        alpha_and_mae_list['maes'].append(mean_absolute_error(test_y, y_pred))
 
     # plot the MAE - Alpha
-    
+    plt.figure(title)
+    plt.plot(alpha_and_mae_list.get("alphas"), alpha_and_mae_list.get("maes"))
+    plt.ylabel("MAE")
+    plt.xlabel("Alpha")
+    plt.savefig(f"../Figures/{title}-mae-alpha.png")
+    # plt.show()
 
 def main():
     """
@@ -114,21 +149,26 @@ def main():
     e.g. lasso_grid = dict(alpha=[0.1, 0.2, 0.4],
                            max_iter=[1000, 2000, 5000])
     """
-    
+    param_ = {
+        'alpha': [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], 
+        'max_iter': [1000, 2000, 3000, 4000, 5000, 7000, 10000],
+        'normalize': [True, False]
+    }
+    ols_grid = dict(
+        fit_intercept=[True, False],
+        normalize=[True, False]
+    )
     ridge_grid = dict( 
         alpha = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], 
-        max_iter=[1000, 2000, 3000, 4000, 5000, 7000, 10000]
+        max_iter=[1000, 2000, 3000, 4000, 5000, 7000, 10000],
+        normalize=[True, False]
     )
     lasso_grid = dict( 
         alpha = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], 
-        max_iter=[1000, 2000, 3000, 4000, 5000, 7000, 10000]
+        max_iter=[1000, 2000, 3000, 4000, 5000, 7000, 10000],
+        normalize=[True, False]
     )
-    ols_grid = dict(
-        fit_intercept=[True, False]
-    )
-
-
-
+    
     # Tune the hyper-paramter by calling the hyper-parameter tuning function
     # e.g. lasso_model, lasso_param = hyper_parameter_tuning(Lasso, lasso_grid, train, valid)
     ols_model , ols_param = hyper_parameter_tuning(
