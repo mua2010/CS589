@@ -24,8 +24,8 @@ def load_data(dataset):
     X:          shape (N, 240)
     y:          shape (N, 1)
     """
-    X = pd.read_csv(f"Data/housing_data/{dataset}_x.csv", header=None).to_numpy()
-    y = pd.read_csv(f"Data/housing_data/{dataset}_y.csv", header=None).to_numpy()
+    X = pd.read_csv(f"../../Data/housing_data/{dataset}_x.csv", header=None).to_numpy()
+    y = pd.read_csv(f"../../Data/housing_data/{dataset}_y.csv", header=None).to_numpy()
 
     return X,y
 
@@ -143,31 +143,24 @@ def main():
     train = load_data('train')
     valid = load_data('valid')
     test = load_data('test')
+    test_x, test_y = test
 
     """
     Define the parameter grid each each classifier
     e.g. lasso_grid = dict(alpha=[0.1, 0.2, 0.4],
                            max_iter=[1000, 2000, 5000])
     """
-    param_ = {
+    params_ = {
         'alpha': [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], 
         'max_iter': [1000, 2000, 3000, 4000, 5000, 7000, 10000],
         'normalize': [True, False]
     }
     ols_grid = dict(
         fit_intercept=[True, False],
-        normalize=[True, False]
+        normalize=params_['normalize']
     )
-    ridge_grid = dict( 
-        alpha = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], 
-        max_iter=[1000, 2000, 3000, 4000, 5000, 7000, 10000],
-        normalize=[True, False]
-    )
-    lasso_grid = dict( 
-        alpha = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], 
-        max_iter=[1000, 2000, 3000, 4000, 5000, 7000, 10000],
-        normalize=[True, False]
-    )
+    ridge_grid = params_
+    lasso_grid = params_
     
     # Tune the hyper-paramter by calling the hyper-parameter tuning function
     # e.g. lasso_model, lasso_param = hyper_parameter_tuning(Lasso, lasso_grid, train, valid)
@@ -186,6 +179,11 @@ def main():
         ridge_grid, 
         train, valid
     )
+
+    for each_model, each_param in zip([ols_model, lasso_model, ridge_model], [ols_param, lasso_param, ridge_param]):
+        each_model.set_params(**each_param)
+        mae = mean_absolute_error(test_y, each_model.predict(test_x))
+        print(f"Mean Absolute Error for {each_model.__str__()} with {each_param.__str__()} = {mae}")
 
     # Plot the MAE - Alpha plot by calling the plot_mae_alpha function
     # e.g. plot_mae_alpha(Lasso, lasso_param, train, valid, test, "Lasso")
