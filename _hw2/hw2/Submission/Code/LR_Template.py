@@ -279,6 +279,7 @@ def main():
     cm_lr = LogisticRegression(input_size=_vocabulary_size, reg=0)
     cm_lr.gradDescent(X_train, y_train, learning_rate=1, num_epochs=1000)
     y_pred_test = cm_lr.predict(X_valid)[1]
+    print(f"{getauc(y_valid, y_prob)}")
     print("Confusion Matrix on the validation data with the best hyper parameters")
     print("learning_rate=1, num_epochs=1000, reg=0")
     print(conf_mat(y_valid, y_pred_test))
