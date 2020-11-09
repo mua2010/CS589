@@ -7,15 +7,46 @@ from torchvision import datasets, transforms
 
 import numpy as np
 import torch.utils.data as utils
+import matplotlib.pyplot as plt
 
 # The parts that you should complete are designated as TODO
 class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet, self).__init__()
         # TODO: define the layers of the network
+        _dict = {
+            "in_channels": 1,
+            "out_channels": 32, 
+            "kernel_size": 3,
+            "stride": 1,
+            "padding": 0
+        }
+        self.conv_one = nn.Conv2d(**_dict)
+        _dict = {
+            "in_channels": 32,
+            "out_channels": 64, 
+            "kernel_size": 3,
+            "stride": 1,
+            "padding": 0
+        }
+        self.conv_two = nn.Conv2d(**_dict)
+        self.mp_drop = nn.Dropout2d(p=0.25)
+        self.fc1 = nn.Linear(64*12*12, 128)
+        self.fc1_drop = nn.Dropout2d(p=0.5)
+        self.fc2 = nn.Linear(128, 10)
 
     def forward(self, x):
         # TODO: define the forward pass of the network using the layers you defined in constructor
+        x = F.relu(self.conv_one(x))
+        x = F.relu(self.conv_two(x))
+        x = F.max_pool2d(x, 2)
+        x = self.mp_drop(x)
+        # breakpoint()
+        # x = x.flatten()
+        x = x.reshape(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        x = self.fc1_drop(x)
+        return self.fc2(x)
 
 
 def train(model, device, train_loader, optimizer, epoch):
@@ -60,11 +91,11 @@ def main():
 
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    train_X = np.load('Data/X_train.npy')
-    train_Y = np.load('Data/y_train.npy')
+    train_X = np.load('../../Data/X_train.npy')
+    train_Y = np.load('../../Data/y_train.npy')
 
-    test_X = np.load('Data/X_test.npy')
-    test_Y = np.load('Data/y_test.npy')
+    test_X = np.load('../../Data/X_test.npy')
+    test_Y = np.load('../../Data/y_test.npy')
 
     train_X = train_X.reshape([-1,1,28,28]) # the data is flatten so we reshape it here to get to the original dimensions of images
     test_X = test_X.reshape([-1,1,28,28])
@@ -85,17 +116,29 @@ def main():
     model = ConvNet().to(device)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
+    train_acc_list = list()
+    test_acc_list = list()
+
     for epoch in range(NumEpochs):
         train_acc = train(model, device, train_loader, optimizer, epoch)
+        train_acc_list.append(train_acc)
         print('\nTrain set Accuracy: {:.1f}%\n'.format(train_acc))
         test_acc = test(model, device, test_loader)
+        test_acc_list.append(test_acc)
         print('\nTest set Accuracy: {:.1f}%\n'.format(test_acc))
         #TODO: Store train_acc and test_acc in an array to plot later.
         
     torch.save(model.state_dict(), "mnist_cnn.pt")
 
     #TODO: Plot train and test accuracy vs epoch
-
+    plt.figure("CNN train and test accuracy vs epoch")
+    plt.plot(list(range(NumEpochs)), train_acc_list, c='b', label="train accuracy")
+    plt.plot(list(range(NumEpochs)), test_acc_list, c='r', label="test accuracy")
+    plt.ylabel("accuracy")
+    plt.xlabel("# epoch")
+    # plt.xlim(0,15)
+    plt.legend(loc=0)
+    plt.savefig('../Figures/q1.2b_CNN_train_test_accuracy_vs_epoch.png')
 
 if __name__ == '__main__':
     main()
