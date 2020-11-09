@@ -1,10 +1,18 @@
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+import math
 def SVD(A, s, k):
     # TODO: Calculate probabilities p_i
     n,m = A.shape
-
+    probabilities = list()
+    counter = 0
+    while counter < n:
+        num = math.pow(np.linalg.norm(A[counter,:], ord=2), 2)
+        dnm = np.linalg.norm(A)**2
+        pi = num/dnm
+        probabilities.append(pi)
+        counter += 1
     # TODO: Construct S matrix of size s by m
     S = np.zeros((s,m))
 

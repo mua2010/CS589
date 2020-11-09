@@ -30,23 +30,20 @@ class ConvNet(nn.Module):
             "padding": 0
         }
         self.conv_two = nn.Conv2d(**_dict)
-        self.mp_drop = nn.Dropout2d(p=0.25)
-        self.fc1 = nn.Linear(64*12*12, 128)
-        self.fc1_drop = nn.Dropout2d(p=0.5)
-        self.fc2 = nn.Linear(128, 10)
+        self.Dropout_2d = nn.Dropout2d(p=0.25)
+        self.Linear_1 = nn.Linear(64*12*12, 128)
+        self.l1_Dropout2d = nn.Dropout2d(p=0.5)
+        self.l2 = nn.Linear(128, 10)
 
     def forward(self, x):
         # TODO: define the forward pass of the network using the layers you defined in constructor
-        x = F.relu(self.conv_one(x))
-        x = F.relu(self.conv_two(x))
-        x = F.max_pool2d(x, 2)
-        x = self.mp_drop(x)
-        # breakpoint()
-        # x = x.flatten()
-        x = x.reshape(x.size(0), -1)
-        x = F.relu(self.fc1(x))
-        x = self.fc1_drop(x)
-        return self.fc2(x)
+        x = F.relu(self.conv_two(F.relu(self.conv_one(x))))
+        x = self.Dropout_2d(F.max_pool2d(x, 2))
+        reshape_first_param = x.size(0)
+        x = x.reshape(reshape_first_param, -1)
+        x = F.relu(self.Linear_1(x))
+        x = self.l1_Dropout2d(x)
+        return self.l2(x)
 
 
 def train(model, device, train_loader, optimizer, epoch):
@@ -136,7 +133,6 @@ def main():
     plt.plot(list(range(NumEpochs)), test_acc_list, c='r', label="test accuracy")
     plt.ylabel("accuracy")
     plt.xlabel("# epoch")
-    # plt.xlim(0,15)
     plt.legend(loc=0)
     plt.savefig('../Figures/q1.2b_CNN_train_test_accuracy_vs_epoch.png')
 
