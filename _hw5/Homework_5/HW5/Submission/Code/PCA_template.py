@@ -48,19 +48,34 @@ plt.savefig("../Figures/q3_eigen_values.png")
 #%% Plot 5 first eigen vectors
 plt.clf()
 fig, ax = plt.subplots(5,1,figsize=(10,10))
-fig.suptitle("5 first eigen vectors")
+fig.suptitle("q3.3 5 first eigen vectors")
 each_digit_list = list()
 counter = 0
 for each in ax.flat:
-    placeholder = np.real(vectos.T[counter]).reshape(28,28)
+    placeholder = np.real(vectors.T[counter]).reshape(28,28)
     each.imshow(placeholder)
     counter += 1
-plt.savefig("../Figures/q3_5_first_eigen_vectors.png")
-breakpoint()
+plt.savefig("../Figures/q3.3_5_first_eigen_vectors.png")
 
 #%% Project to two first bases
 two_first = vectors.T[:2]
-projected = two_first.dot(centered_data.T)
+projected = np.real(two_first.dot(centered_data.T))
 
 #%% Plotting the projected data as scatter plot
-plt.figure()
+plt.clf()
+plt.figure(figsize=(12,8))
+coutner = 0
+while counter < 10:
+    # breakpoint()
+    x = projected[0][np.where(Y==counter)]
+    y = projected[1][np.where(Y==counter)]
+    s = 4
+    label = counter
+    plt.scatter(x=x, y=y, s=s, label=label)
+    counter += 1
+plt.title("q3.4 projected data as scatter plot")
+plt.ylabel("second principal comp")
+plt.xlabel("first principal comp")
+plt.legend()
+# plt.rc
+plt.savefig("../Figures/q3.4_projected_data_as_scatter.png")
