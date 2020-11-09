@@ -7,7 +7,11 @@ X = np.load('../../Data/X_train.npy')
 Y = np.load('../../Data/y_train.npy')
 
 #%% Plotting mean of the whole dataset
-mean = np.mean(X.T, axis=1)
+_dict = {
+    "a": X.T,
+    "axis": 1
+}
+mean = np.mean(**_dict)
 reshaped = mean.reshape(28, 28)
 plt.imshow(reshaped)
 plt.title("Mean of whole Dataset Plot")
@@ -21,7 +25,11 @@ each_digit_list = list()
 counter = 0
 while counter < 10:
     temp0 = X[np.where(Y==counter)]
-    temp = np.mean(temp0.T, axis=1).reshape(28,28)
+    _dict = {
+        "a": temp0.T,
+        "axis": 1
+    }
+    temp = np.mean(**_dict).reshape(28,28)
     each_digit_list.append(temp)
     counter += 1
 counter = 0
@@ -63,19 +71,19 @@ projected = np.real(two_first.dot(centered_data.T))
 
 #%% Plotting the projected data as scatter plot
 plt.clf()
-plt.figure(figsize=(12,8))
-coutner = 0
+plt.figure(figsize=(13,13))
+counter = 0
 while counter < 10:
-    # breakpoint()
-    x = projected[0][np.where(Y==counter)]
-    y = projected[1][np.where(Y==counter)]
-    s = 4
-    label = counter
-    plt.scatter(x=x, y=y, s=s, label=label)
+    _dict = {
+        "x": projected[0][np.where(Y==counter)],
+        "y": projected[1][np.where(Y==counter)],
+        "s": 4,
+        "label": counter
+    }
+    plt.scatter(**_dict)
     counter += 1
 plt.title("q3.4 projected data as scatter plot")
 plt.ylabel("second principal comp")
 plt.xlabel("first principal comp")
 plt.legend()
-# plt.rc
 plt.savefig("../Figures/q3.4_projected_data_as_scatter.png")
